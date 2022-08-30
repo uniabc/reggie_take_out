@@ -6,6 +6,8 @@ import com.cxf.reggie.entity.User;
 import com.cxf.reggie.service.UserService;
 import com.cxf.reggie.utils.SMSUtils;
 import com.cxf.reggie.utils.ValidateCodeUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,6 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
 
 @RestController
 @RequestMapping("/user")
@@ -23,6 +27,10 @@ public class UserController {
     @Resource
     private UserService userService;
 
+    @Autowired
+    private StringRedisTemplate redisTemplate;
+
+
     @PostMapping("/sendMsg")
     public R<String> sendMag(@RequestBody User user, HttpSession session){
         String phone = user.getPhone();
@@ -30,7 +38,8 @@ public class UserController {
         if(StringUtils.hasText(phone)){
             String code = ValidateCodeUtils.generateValidateCode(6).toString();
             SMSUtils.sendMessage("阿里云短信测试","SMS_154950909",phone,code);
-            session.setAttribute("phone",code);
+            // session.setAttribute("phone",code);
+            redisTemplate.opsForValue().set(phone,code,5, TimeUnit.MINUTES);
             return R.success("已发送");
         }
         return R.error("短信发送失败");
@@ -40,7 +49,8 @@ public class UserController {
     public R<User> login(@RequestBody Map<String,String> map,HttpSession session){
         String phone=map.get("phone");
         String code=map.get("code");
-        String codeInSession = (String)session.getAttribute("phone");
+        // String codeInSession = (String)session.getAttribute("phone");
+        String codeInSession = (String)redisTemplate.opsForValue().get("phone");
         if("666666".equals(code) || codeInSession!=null&&codeInSession.equals(code)){
             LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.eq(User::getPhone,phone);
@@ -51,6 +61,7 @@ public class UserController {
                 userService.save(user);
             }
             session.setAttribute("user",user.getId());
+            redisTemplate.delete(phone);
             return R.success(user);
         }
 
