@@ -1,0 +1,42 @@
+# class
+*.calss
+# log
+*.log
+*.lock
+# package
+*.jar
+*.war
+*.ear
+*.zip
+*.nar
+*.tar.gz
+*.rar
+# target目录下所有的东西
+target/
+# idea中的配置
+.idea
+*.iml
+# STS
+.apt_generated
+.factorypath
+.springBeans
+# IntelliJ IDEA
+*.iml
+*.ipr
+*.iws
+.idea
+.classpath
+.project
+.setting
+bin/
+tmp/
+
+# rebel
+*rebel.xml*
+
+# BlueJ files
+*.ctxt
+# Mobile Tools for Java（J2ME）
+.mtj.tmp/
+# virtual machine crash logs
+hs_err_pid*
