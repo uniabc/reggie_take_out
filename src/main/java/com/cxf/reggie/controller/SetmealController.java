@@ -7,6 +7,9 @@ import com.cxf.reggie.common.R;
 import com.cxf.reggie.dto.SetmealDto;
 import com.cxf.reggie.entity.Setmeal;
 import com.cxf.reggie.service.SetmealService;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -27,6 +30,7 @@ public class SetmealController {
         return R.success(page);
     }
 
+    @CachePut(value = "setmealcache",key = "#p0.categoryId",unless = "#result.code==0")
     @PostMapping
     public R<String> saveWithSetmealDishes(@RequestBody SetmealDto setmealDto){
         setmealService.saveWithSetmealDishes(setmealDto);
@@ -45,6 +49,7 @@ public class SetmealController {
         return R.success("已更新信息");
     }
 
+    @CacheEvict(value = "setmealcache",allEntries = true)
     @DeleteMapping()
     public R<String> deleteWithSetMealDishes(@RequestParam("ids") List<Long> ids){
         setmealService.deleteWithSetMealDishes(ids);
