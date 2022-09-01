@@ -19,33 +19,38 @@ spring:
     redis:
       time-to-live: 1800000 #设置缓存过期时间，可选
   #数据源配置
-  datasource:
-    #说明： 如果没有使用useSSL=true, 会报红警告
-    url: jdbc:mysql://localhost:3306/reggie?useUnicode=true&characterEncoding=utf-8&useSSL=true
-    username: root
-    password: cxfcxf
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    #durid 配置
-    druid:
-      #filters: stat,wall,slf4j #所有开启的功能
-      stat-view-servlet: #监控页配置
-        enabled: true
-        login-username: cxfcxf
-        login-password: 666666
-        resetEnable: false
-      web-stat-filter: #web 监控
-        enabled: true
-        urlPattern: /*
-        exclusions: '*.js,*.gif,*.jpg,*.png,*.css,*.ico,/druid/*'
-      filter:
-        stat: #sql 监控
-          slow-sql-millis:
-            1000logSlowSql: true
-          enabled: true
-        wall: #防火墙
-          enabled: true
-          config:
-          drop-table-allow: false
+  shardingsphere:
+    datasource:
+      names:
+        master,slave
+      # 主数据源
+      master:
+        type: com.alibaba.druid.pool.DruidDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        url: jdbc:mysql://192.168.10.130:3306/reggie?characterEncoding=utf-8
+        username: root
+        password: ygrth94..
+      # 从数据源
+      slave:
+        type: com.alibaba.druid.pool.DruidDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        url: jdbc:mysql://192.168.10.131:3306/reggie?characterEncoding=utf-8
+        username: root
+        password: ygrth94..
+    masterslave:
+      # 读写分离配置
+      load-balance-algorithm-type: round_robin #轮询
+      # 最终的数据源名称
+      name: dataSource
+      # 主库数据源名称
+      master-data-source-name: master
+      # 从库数据源名称列表，多个逗号分隔
+      slave-data-source-names: slave
+    props:
+      sql:
+        show: true #开启SQL显示，默认false
+  main:
+      allow-bean-definition-overriding: true
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true
